@@ -14,10 +14,6 @@ predictions through a dynamic feature form.
   authentication routing.
 - `storage/` — filesystem boundary for datasets and trained model artifacts.
   Large files are not stored in PostgreSQL.
-- `legacy-researchmind/` — the original ResearchMind multi-agent research
-  system (LangChain web-search/report pipeline), kept intact. It does not run
-  as part of this platform; see
-  [`legacy-researchmind/README.md`](legacy-researchmind/README.md).
 
 See [`backend/README.md`](backend/README.md) and
 [`frontend/README.md`](frontend/README.md) for setup commands.

@@ -1,19 +1,6 @@
 version: 2
 updates:
   - package-ecosystem: pip
-    directory: "/legacy-researchmind"
-    schedule:
-      interval: weekly
-      day: monday
-      time: "04:00"
-      timezone: Etc/UTC
-    open-pull-requests-limit: 5
-    groups:
-      legacy-python-dependencies:
-        patterns:
-          - "*"
-
-  - package-ecosystem: pip
     directory: "/backend"
     schedule:
       interval: weekly
