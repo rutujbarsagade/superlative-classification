@@ -12,8 +12,8 @@ Copy-Item backend/.env.example backend/.env
 ```
 
 Set `SECRET_KEY`, PostgreSQL connection values, and the development email settings
-in `backend/.env`. PostgreSQL is the application database; SQLite is available only
-as an explicit test fallback when PostgreSQL is not running.
+in `backend/.env`. PostgreSQL is the only database used by the application and its
+tests.
 
 Install dependencies and apply migrations:
 
@@ -104,12 +104,8 @@ command below removes old unreferenced generated files; use `--dry-run` first:
 .venv\Scripts\python.exe backend\manage.py test apps.accounts apps.models apps.datasets apps.training --settings=config.settings.test
 ```
 
-Set `TEST_DATABASE_ENGINE=sqlite` for the isolated local test fallback. The normal
-application and default test configuration use PostgreSQL. For example:
-
-```powershell
-$env:TEST_DATABASE_ENGINE = "sqlite"
-```
+Tests run against PostgreSQL, the same engine as the application, using the
+dedicated `test_superlative_classification` database.
 
 Image classification is intentionally deferred until the CSV workflow is reviewed
 and accepted.

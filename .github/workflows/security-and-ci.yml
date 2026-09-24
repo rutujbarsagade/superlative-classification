@@ -54,25 +54,22 @@ jobs:
         run: python -m pip install -r backend/requirements.txt
 
       - name: Check Django configuration
-        env:
-          TEST_DATABASE_ENGINE: sqlite
         run: python backend/manage.py check --settings=config.settings.test
 
       - name: Check migrations
         env:
-          TEST_DATABASE_ENGINE: sqlite
+          POSTGRES_DB: superlative_classification
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST: 127.0.0.1
+          POSTGRES_PORT: 5432
+          POSTGRES_TEST_DB: test_superlative_classification
         run: |
           python backend/manage.py makemigrations --check --dry-run --settings=config.settings.test
           python backend/manage.py migrate --settings=config.settings.test --noinput
 
-      - name: Run backend tests with SQLite fallback
-        env:
-          TEST_DATABASE_ENGINE: sqlite
-        run: python backend/manage.py test apps.accounts apps.models apps.datasets apps.training --settings=config.settings.test -v 1
-
       - name: Run backend tests with PostgreSQL
         env:
-          TEST_DATABASE_ENGINE: postgres
           POSTGRES_DB: superlative_classification
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres

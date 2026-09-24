@@ -1,8 +1,7 @@
 """Test settings.
 
-The default test database is PostgreSQL so tests exercise the production database
-engine. A SQLite test fallback is available only for isolated local unit tests
-when PostgreSQL is unavailable; it is not part of the application configuration.
+The test database is PostgreSQL so tests exercise the production database
+engine. PostgreSQL is the only supported database.
 """
 
 import os
@@ -21,16 +20,6 @@ REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {  # noqa: F405
     "user": "1000/min",
 }
 
-if os.getenv("TEST_DATABASE_ENGINE", "postgres").lower() == "sqlite":  # noqa: F405
-    DATABASES = {  # noqa: F405
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BACKEND_DIR / "test.sqlite3",  # noqa: F405
-        }
-    }
-else:
-    DATABASES["default"]["TEST"] = {  # noqa: F405
-        "NAME": os.getenv(  # noqa: F405
-            "POSTGRES_TEST_DB", "test_superlative_classification"
-        )
-    }
+DATABASES["default"]["TEST"] = {  # noqa: F405
+    "NAME": os.getenv("POSTGRES_TEST_DB", "test_superlative_classification")
+}
