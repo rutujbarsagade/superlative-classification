@@ -112,8 +112,10 @@ export function PredictionPage() {
 
       {result ? (
         <div className="mt-8 max-w-2xl rounded-xl border border-emerald-900/70 bg-emerald-950/30 p-6" role="status">
-          <p className="text-xs uppercase tracking-[0.16em] text-emerald-300/70">Predicted class</p>
-          <p className="mt-2 text-3xl font-semibold text-emerald-100">{String(result.predicted_class)}</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-emerald-300/70">
+            {result.predicted_value !== undefined && result.probability === null ? "Predicted value" : "Predicted class"}
+          </p>
+          <p className="mt-2 text-3xl font-semibold text-emerald-100">{String(result.predicted_value ?? result.predicted_class)}</p>
           {result.probability !== null ? (
             <p className="mt-3 text-sm text-emerald-200/80">Estimated probability: {(result.probability * 100).toFixed(1)}%</p>
           ) : (

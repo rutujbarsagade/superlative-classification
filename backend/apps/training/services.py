@@ -15,7 +15,7 @@ from apps.datasets.models import Dataset
 from apps.datasets.services import load_dataset_dataframe, resolve_dataset_path
 from apps.models.models import MLModel, ModelStatus
 from apps.models.services import ModelCapacityError, ensure_model_capacity
-from ml.csv.trainer import train_random_forest
+from ml.csv.trainer import train, train_random_forest
 from ml.csv.validation import DatasetValidationError
 
 from .models import TrainingJob, TrainingStatus
@@ -108,7 +108,7 @@ def start_training(model: MLModel) -> TrainingJob:
             model=locked_model,
             status=TrainingStatus.RUNNING,
             progress=10,
-            algorithm="RANDOM_FOREST",
+            algorithm=locked_model.algorithm,
             started_at=timezone.now(),
         )
         locked_model.status = ModelStatus.TRAINING
@@ -129,7 +129,16 @@ def start_training(model: MLModel) -> TrainingJob:
         job.progress = 35
         job.save(update_fields=["progress"])
 
-        result = train_random_forest(dataframe, locked_dataset.target_column)
+        if locked_model.algorithm == "RANDOM_FOREST_CLASSIFIER":
+            # Keep the established entry point (and its compatibility for
+            # existing integrations) for the default algorithm.
+            result = train_random_forest(dataframe, locked_dataset.target_column)
+        else:
+            result = train(
+                dataframe,
+                locked_dataset.target_column,
+                algorithm=locked_model.algorithm,
+            )
         job.progress = 80
         job.save(update_fields=["progress"])
 

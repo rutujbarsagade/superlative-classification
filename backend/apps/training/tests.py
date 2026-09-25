@@ -40,6 +40,8 @@ class TrainingApiTests(APITestCase):
             email_verified=True,
             approval_status="APPROVED",
         )
+        self.user.role = "SUPER_ADMIN"
+        self.user.save(update_fields=["role"])
         self.other_user = User.objects.create_user(
             name="Other Owner",
             email="other.model@example.com",
@@ -213,7 +215,7 @@ class TrainingApiTests(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.assertFalse(response.data["success"])
 
     def test_prediction_returns_class_and_probability(self):
@@ -334,6 +336,5 @@ class TrainingApiTests(APITestCase):
             format="json",
         )
 
-        self.assertEqual(training_response.status_code, 404)
-        self.assertEqual(prediction_response.status_code, 404)
-
+        self.assertEqual(training_response.status_code, 403)
+        self.assertEqual(prediction_response.status_code, 200)

@@ -11,7 +11,7 @@ from apps.models.models import MLModel
 def can_manage_dataset(user, model: MLModel) -> bool:
     if not can_access_platform(user):
         return False
-    return user.role == UserRole.SUPER_ADMIN or model.owner_id == user.pk
+    return user.role == UserRole.SUPER_ADMIN
 
 
 class IsDatasetOwnerOrSuperAdmin(BasePermission):

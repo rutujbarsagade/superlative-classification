@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AdminRoute } from "./components/AdminRoute";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -23,6 +23,8 @@ import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 export default function App() {
   return (
     <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
       <Route element={<PublicLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -34,12 +36,12 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/models" element={<ModelsPage />} />
-          <Route path="/models/new" element={<CreateModelPage />} />
           <Route path="/models/:modelId" element={<ModelDetailsPage />} />
           <Route path="/models/:modelId/dataset" element={<DatasetPage />} />
           <Route path="/models/:modelId/training" element={<TrainingPage />} />
           <Route path="/models/:modelId/prediction" element={<PredictionPage />} />
           <Route element={<AdminRoute />}>
+            <Route path="/models/new" element={<CreateModelPage admin />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/models" element={<ModelsPage admin />} />
             <Route path="/admin/models/new" element={<CreateModelPage admin />} />

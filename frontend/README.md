@@ -22,6 +22,10 @@ access tokens remain valid for their short configured lifetime. A deployment rev
 should decide whether to move refresh tokens to an HttpOnly cookie before
 production exposure.
 
+Super Admins create and train CSV models. Approved developers can view trained
+models and test predictions; model creation, dataset upload, and training are
+not available to developers.
+
 The current routes are:
 
 - `/login`

@@ -17,6 +17,7 @@ def predict_with_pipeline(pipeline, input_frame: pd.DataFrame) -> dict:
     prediction = pipeline.predict(input_frame)[0]
     result = {
         "predicted_class": _json_value(prediction),
+        "predicted_value": _json_value(prediction),
         "probability": None,
         "probabilities": {},
     }

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import MLModel, ModelType
+from .models import Algorithm, MLModel, ModelType
 
 
 class MLModelSerializer(serializers.ModelSerializer):
@@ -18,6 +18,7 @@ class MLModelSerializer(serializers.ModelSerializer):
             "owner",
             "owner_email",
             "model_type",
+            "algorithm",
             "status",
             "description",
             "has_artifact",
@@ -58,9 +59,14 @@ class MLModelSerializer(serializers.ModelSerializer):
 class MLModelCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = MLModel
-        fields = ("name", "description", "model_type")
+        fields = ("name", "description", "model_type", "algorithm")
 
     def validate_model_type(self, value):
         if value != ModelType.CSV:
-            raise serializers.ValidationError("Only CSV classification is available in this phase.")
+            raise serializers.ValidationError("Only CSV tabular models are available in this phase.")
+        return value
+
+    def validate_algorithm(self, value):
+        if value not in Algorithm.values:
+            raise serializers.ValidationError("Select a supported CSV algorithm.")
         return value

@@ -10,7 +10,7 @@ import pandas as pd
 from django.conf import settings
 from django.db import transaction
 
-from apps.models.models import MLModel, ModelStatus
+from apps.models.models import Algorithm, MLModel, ModelStatus
 from apps.models.services import ensure_model_capacity
 from ml.csv.validation import (
     DatasetValidationError,
@@ -136,7 +136,14 @@ def upload_dataset(*, model: MLModel, uploaded_file) -> Dataset:
             max_rows=settings.MAX_DATASET_ROWS,
             max_columns=settings.MAX_DATASET_COLUMNS,
         )
-        metadata = build_metadata(dataframe, preview_rows=settings.MAX_PREVIEW_ROWS)
+        metadata = build_metadata(
+            dataframe,
+            preview_rows=settings.MAX_PREVIEW_ROWS,
+            task="regression"
+            if locked_model.algorithm
+            in {Algorithm.RANDOM_FOREST_REGRESSOR, Algorithm.LINEAR_REGRESSION}
+            else "classification",
+        )
         original_filename = Path(uploaded_file.name).name[:255]
         with transaction.atomic():
             dataset, _ = Dataset.objects.update_or_create(
@@ -195,7 +202,15 @@ def select_target_column(*, model: MLModel, target_column: str) -> Dataset:
 
     try:
         dataframe = load_dataset_dataframe(dataset)
-        validate_target_column(dataframe, target_column)
+        if locked_model.algorithm in {
+            Algorithm.RANDOM_FOREST_REGRESSOR,
+            Algorithm.LINEAR_REGRESSION,
+        }:
+            from ml.csv.validation import validate_regression_target
+
+            validate_regression_target(dataframe, target_column)
+        else:
+            validate_target_column(dataframe, target_column)
     except DatasetNotFound:
         with transaction.atomic():
             locked_model = MLModel.objects.select_for_update().get(pk=model.pk)
@@ -221,7 +236,14 @@ def select_target_column(*, model: MLModel, target_column: str) -> Dataset:
 
 def dataset_preview(dataset: Dataset) -> dict:
     dataframe = load_dataset_dataframe(dataset)
-    metadata = build_metadata(dataframe, preview_rows=settings.MAX_PREVIEW_ROWS)
+    metadata = build_metadata(
+        dataframe,
+        preview_rows=settings.MAX_PREVIEW_ROWS,
+        task="regression"
+        if dataset.model.algorithm
+        in {Algorithm.RANDOM_FOREST_REGRESSOR, Algorithm.LINEAR_REGRESSION}
+        else "classification",
+    )
     return {
         "columns": metadata["columns"],
         "preview": metadata["preview"],

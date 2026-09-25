@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from apps.models.services import get_visible_model
 from config.api import success
 
-from .permissions import IsTrainingOwnerOrSuperAdmin
+from .permissions import IsTrainedModelUser, IsTrainingOwnerOrSuperAdmin
 from .prediction import PredictionError, predict, prediction_schema
 from .serializers import PredictionInputSerializer, TrainingJobSerializer
 from .services import TrainingError, latest_training_job, model_metrics, start_training
@@ -55,7 +55,7 @@ class MetricsView(APIView):
 
 
 class PredictionSchemaView(APIView):
-    permission_classes = [IsAuthenticated, IsTrainingOwnerOrSuperAdmin]
+    permission_classes = [IsAuthenticated, IsTrainedModelUser]
 
     def get(self, request, model_id: int):
         model = _get_model(request, model_id)
@@ -68,7 +68,7 @@ class PredictionSchemaView(APIView):
 
 
 class PredictionView(APIView):
-    permission_classes = [IsAuthenticated, IsTrainingOwnerOrSuperAdmin]
+    permission_classes = [IsAuthenticated, IsTrainedModelUser]
 
     def post(self, request, model_id: int):
         model = _get_model(request, model_id)

@@ -6,7 +6,7 @@ import { createModel } from "../services/modelService";
 
 export function CreateModelPage({ admin = false }) {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", description: "" });
+  const [form, setForm] = useState({ name: "", description: "", algorithm: "RANDOM_FOREST_CLASSIFIER" });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,7 +38,7 @@ export function CreateModelPage({ admin = false }) {
         <p className="text-sm font-medium text-cyan-300">Model registry</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Create a model</h1>
         <p className="mt-3 text-sm leading-6 text-slate-400">
-          Start with a CSV classification model. Image classification is not available yet.
+          Choose an algorithm for your CSV model. Image classification is not available yet.
         </p>
       </div>
 
@@ -69,8 +69,20 @@ export function CreateModelPage({ admin = false }) {
           />
         </div>
         <div className="rounded-md border border-slate-800 bg-slate-950/50 p-4">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Model type</p>
-          <p className="mt-2 text-sm text-slate-200">CSV / Tabular Classification</p>
+          <label className="text-xs uppercase tracking-[0.16em] text-slate-500" htmlFor="model-algorithm">Algorithm</label>
+          <select
+            className="mt-2 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+            id="model-algorithm"
+            name="algorithm"
+            onChange={updateField}
+            value={form.algorithm}
+          >
+            <option value="RANDOM_FOREST_CLASSIFIER">Random Forest Classifier</option>
+            <option value="DECISION_TREE_CLASSIFIER">Decision Tree Classifier</option>
+            <option value="LOGISTIC_REGRESSION">Logistic Regression</option>
+            <option value="RANDOM_FOREST_REGRESSOR">Random Forest Regressor</option>
+            <option value="LINEAR_REGRESSION">Linear Regression</option>
+          </select>
           <p className="mt-1 text-xs text-slate-500">Image Classification · Coming Soon</p>
         </div>
         {error ? <ErrorState message={error} /> : null}

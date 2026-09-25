@@ -5,7 +5,7 @@ django-cors-headers>=4.6,<5.0
 psycopg[binary]>=3.2,<4.0
 python-dotenv>=1.0,<2.0
 
-# CSV classification dependencies for later phases.
+# CSV classification and regression dependencies.
 # Image ML dependencies are intentionally deferred.
 numpy>=2.0,<3.0
 pandas>=2.2,<4.0

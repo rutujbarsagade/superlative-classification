@@ -46,7 +46,7 @@ export function RegisterPage() {
   return (
     <section className="mx-auto max-w-md">
       <div className="mb-8">
-        <p className="text-sm font-medium text-cyan-300">Developer access</p>
+        <p className="text-sm font-medium text-cyan-300">Platform access</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Request access</h1>
         <p className="mt-3 text-sm leading-6 text-slate-400">
           Create a developer account. A Super Admin must approve it before you can sign in.
@@ -152,4 +152,3 @@ export function RegisterPage() {
     </section>
   );
 }
-

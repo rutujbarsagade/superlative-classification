@@ -35,7 +35,8 @@ export function DashboardPage() {
 
   const trainedCount = models.filter((model) => model.status === "TRAINED").length;
   const draftCount = models.filter((model) => model.status === "DRAFT").length;
-  const modelPath = user?.role === "SUPER_ADMIN" ? "/admin/models" : "/models";
+  const isAdmin = user?.role === "SUPER_ADMIN";
+  const modelPath = isAdmin ? "/admin/models" : "/models";
 
   return (
     <section>
@@ -43,10 +44,14 @@ export function DashboardPage() {
         <div>
           <p className="text-sm font-medium text-cyan-300">Workspace</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Classification dashboard</h1>
-          <p className="mt-3 text-sm text-slate-400">Manage CSV models through dataset, training, and prediction.</p>
+          <p className="mt-3 text-sm text-slate-400">
+            {isAdmin
+              ? "Create, train, and manage CSV classification models."
+              : "Browse trained CSV classification models and generate predictions."}
+          </p>
         </div>
         <Link className="rounded-md bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-cyan-300" to={modelPath}>
-          Open models
+          {isAdmin ? "Manage models" : "Browse trained models"}
         </Link>
       </div>
 
@@ -61,10 +66,17 @@ export function DashboardPage() {
           <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Trained</p>
           <p className="mt-2 text-3xl font-semibold text-emerald-300">{trainedCount}</p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Drafts</p>
-          <p className="mt-2 text-3xl font-semibold text-amber-300">{draftCount}</p>
-        </div>
+        {isAdmin ? (
+          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Drafts</p>
+            <p className="mt-2 text-3xl font-semibold text-amber-300">{draftCount}</p>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Available to test</p>
+            <p className="mt-2 text-3xl font-semibold text-cyan-300">{trainedCount}</p>
+          </div>
+        )}
       </div>
 
       <div className="mt-8 grid gap-4 md:grid-cols-2">

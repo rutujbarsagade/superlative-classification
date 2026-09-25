@@ -62,7 +62,7 @@ export function TrainingPage() {
         <div>
           <p className="text-sm font-medium text-cyan-300">Model workflow</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Training</h1>
-          <p className="mt-3 text-sm text-slate-400">Train the saved Random Forest pipeline and review real evaluation metrics.</p>
+          <p className="mt-3 text-sm text-slate-400">Train the selected pipeline and review evaluation metrics.</p>
         </div>
         <button
           className="rounded-md bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
@@ -102,10 +102,9 @@ export function TrainingPage() {
           <p className="mt-2 text-sm text-slate-400">Metrics use weighted averages for multiclass classification.</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              ["Accuracy", metrics.accuracy],
-              ["Precision", metrics.precision],
-              ["Recall", metrics.recall],
-              ["F1 score", metrics.f1],
+              ...(metrics.accuracy !== undefined
+                ? [["Accuracy", metrics.accuracy], ["Precision", metrics.precision], ["Recall", metrics.recall], ["F1 score", metrics.f1]]
+                : [["MAE", metrics.mae], ["RMSE", metrics.rmse], ["R²", metrics.r2]]),
             ].map(([label, value]) => (
               <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5" key={label}>
                 <p className="text-xs uppercase tracking-[0.16em] text-slate-500">{label}</p>
@@ -113,12 +112,12 @@ export function TrainingPage() {
               </div>
             ))}
           </div>
-          <div className="mt-6 overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          {metrics.confusion_matrix ? <div className="mt-6 overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/60 p-5">
             <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Confusion matrix</p>
             <div className="mt-4 inline-grid gap-1" style={{ gridTemplateColumns: `repeat(${metrics.confusion_matrix?.[0]?.length || 1}, minmax(3rem, 1fr))` }}>
               {metrics.confusion_matrix?.flat().map((value, index) => <span className="rounded bg-slate-800 px-3 py-2 text-center text-sm text-slate-200" key={index}>{value}</span>)}
             </div>
-          </div>
+          </div> : null}
         </div>
       ) : null}
     </section>

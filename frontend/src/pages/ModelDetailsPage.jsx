@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ErrorState } from "../components/ErrorState";
 import { LoadingState } from "../components/LoadingState";
 import { deleteModel, getModel } from "../services/modelService";
+import { useAuth } from "../hooks/useAuth";
 
 function statusClass(status) {
   if (status === "TRAINED") return "border-emerald-800 text-emerald-300";
@@ -15,6 +16,8 @@ function statusClass(status) {
 export function ModelDetailsPage() {
   const { modelId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "SUPER_ADMIN";
   const [model, setModel] = useState(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -68,7 +71,7 @@ export function ModelDetailsPage() {
       </Link>
       <div className="mt-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-cyan-300">CSV classification</p>
+          <p className="text-sm font-medium text-cyan-300">CSV · {model.algorithm?.replaceAll("_", " ")}</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">{model.name}</h1>
           <p className="mt-3 text-sm text-slate-400">Model ID: {model.id}</p>
         </div>
@@ -96,16 +99,20 @@ export function ModelDetailsPage() {
       </div>
 
       <div className="mt-8 flex flex-wrap gap-3">
-        <Link className="rounded-md bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-cyan-300" to={`/models/${model.id}/dataset`}>
-          Dataset
-        </Link>
-        <Link className="rounded-md border border-slate-700 px-4 py-2.5 text-sm text-slate-300 hover:border-slate-500" to={`/models/${model.id}/training`}>
-          Training
-        </Link>
+        {isAdmin ? (
+          <>
+            <Link className="rounded-md bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-cyan-300" to={`/models/${model.id}/dataset`}>
+              Dataset
+            </Link>
+            <Link className="rounded-md border border-slate-700 px-4 py-2.5 text-sm text-slate-300 hover:border-slate-500" to={`/models/${model.id}/training`}>
+              Training
+            </Link>
+          </>
+        ) : null}
         <Link className="rounded-md border border-slate-700 px-4 py-2.5 text-sm text-slate-300 hover:border-slate-500" to={`/models/${model.id}/prediction`}>
           Test model
         </Link>
-        {model.status !== "TRAINING" && model.status !== "VALIDATING" ? (
+        {isAdmin && model.status !== "TRAINING" && model.status !== "VALIDATING" ? (
           <button
             className="rounded-md border border-red-800 px-4 py-2.5 text-sm text-red-300 hover:bg-red-950/30 disabled:opacity-50"
             disabled={isDeleting}

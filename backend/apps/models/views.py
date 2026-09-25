@@ -51,10 +51,12 @@ class ModelDetailView(APIView):
 
     def get(self, request, model_id: int):
         model = _get_model(request, model_id)
+        self.check_object_permissions(request, model)
         return success({"model": MLModelSerializer(model).data})
 
     def delete(self, request, model_id: int):
         model = _get_model(request, model_id)
+        self.check_object_permissions(request, model)
         try:
             delete_model_with_files(model)
         except (ModelLifecycleError, ModelStorageError) as exc:

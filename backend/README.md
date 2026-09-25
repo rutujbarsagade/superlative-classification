@@ -68,9 +68,11 @@ The API is served under `/api/`. The current foundation exposes:
 All API responses use the `success`/`data` and `success`/`error` envelope.
 Only active, email-verified users whose `approval_status` is `APPROVED` can
 receive or use platform tokens. Registration requires email verification before
-an administrator can approve the account. The CSV model, dataset, training,
-metrics, and prediction workflow is implemented. Precision, recall, and F1 use
-weighted averages for multiclass classification.
+an administrator can approve the account. Super Admins create CSV models, upload
+datasets, select targets, and start training. Approved developers can view
+trained models and generate predictions, but cannot create, modify, or train
+models. Precision, recall, and F1 use weighted averages for multiclass
+classification.
 Authentication endpoints use DRF throttling with the default local-memory cache;
 configure a shared cache or enforce equivalent limits at the gateway before
 multi-process production deployment. Configure SMTP settings for real approval

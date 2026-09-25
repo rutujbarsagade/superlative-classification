@@ -39,6 +39,8 @@ class DatasetApiTests(APITestCase):
             email_verified=True,
             approval_status="APPROVED",
         )
+        self.user.role = "SUPER_ADMIN"
+        self.user.save(update_fields=["role"])
         self.other_user = User.objects.create_user(
             name="Other Owner",
             email="other.owner@example.com",
@@ -313,4 +315,3 @@ class DatasetApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 404)
         self.assertFalse(response.data["success"])
-

@@ -102,10 +102,13 @@ def create_csv_model(
     name: str,
     description: str = "",
     model_type: str = ModelType.CSV,
+    algorithm: str = "RANDOM_FOREST_CLASSIFIER",
 ) -> MLModel:
     """Create a CSV model owned by the requesting user."""
     if model_type != ModelType.CSV:
-        raise ValueError("Only CSV classification is available in this phase.")
+        raise ValueError("Only CSV tabular models are available in this phase.")
+    if owner.role != UserRole.SUPER_ADMIN:
+        raise PermissionError("Only a Super Admin can create models.")
     if not can_access_platform(owner):
         raise PermissionError("An approved active account is required to create models.")
     ensure_model_capacity(owner)
@@ -115,6 +118,7 @@ def create_csv_model(
             name=name,
             description=description,
             model_type=ModelType.CSV,
+            algorithm=algorithm,
             status=ModelStatus.DRAFT,
         )
 
@@ -122,7 +126,7 @@ def create_csv_model(
 def visible_models(user):
     if user.role == UserRole.SUPER_ADMIN:
         return MLModel.objects.select_related("owner").prefetch_related("dataset")
-    return MLModel.objects.filter(owner=user).select_related("owner").prefetch_related("dataset")
+    return MLModel.objects.filter(status=ModelStatus.TRAINED).select_related("owner").prefetch_related("dataset")
 
 
 def get_visible_model(*, user, model_id: int) -> MLModel:

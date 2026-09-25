@@ -47,15 +47,15 @@ export function ModelsPage({ admin = false }) {
             {admin ? "Platform models" : "Your models"}
           </h1>
           <p className="mt-3 text-sm text-slate-400">
-            {admin ? "Review models created across the platform." : "Create and manage CSV classification models."}
+            {admin ? "Create and manage CSV classification models across the platform." : "Test available trained CSV classification models."}
           </p>
         </div>
-        <Link
+        {admin ? <Link
           className="rounded-md bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
-          to={admin ? "/admin/models/new" : "/models/new"}
+          to="/models/new"
         >
           Create model
-        </Link>
+        </Link> : null}
       </div>
 
       {error ? <div className="mt-6"><ErrorState message={error} onRetry={loadModels} /></div> : null}

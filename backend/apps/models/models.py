@@ -7,6 +7,14 @@ class ModelType(models.TextChoices):
     IMAGE = "IMAGE", "Image Classification"
 
 
+class Algorithm(models.TextChoices):
+    RANDOM_FOREST_CLASSIFIER = "RANDOM_FOREST_CLASSIFIER", "Random Forest Classifier"
+    DECISION_TREE_CLASSIFIER = "DECISION_TREE_CLASSIFIER", "Decision Tree Classifier"
+    LOGISTIC_REGRESSION = "LOGISTIC_REGRESSION", "Logistic Regression"
+    RANDOM_FOREST_REGRESSOR = "RANDOM_FOREST_REGRESSOR", "Random Forest Regressor"
+    LINEAR_REGRESSION = "LINEAR_REGRESSION", "Linear Regression"
+
+
 class ModelStatus(models.TextChoices):
     DRAFT = "DRAFT", "Draft"
     VALIDATING = "VALIDATING", "Validating"
@@ -26,6 +34,11 @@ class MLModel(models.Model):
         max_length=20,
         choices=ModelType.choices,
         default=ModelType.CSV,
+    )
+    algorithm = models.CharField(
+        max_length=40,
+        choices=Algorithm.choices,
+        default=Algorithm.RANDOM_FOREST_CLASSIFIER,
     )
     status = models.CharField(
         max_length=20,

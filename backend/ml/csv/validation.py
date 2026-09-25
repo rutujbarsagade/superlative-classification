@@ -81,7 +81,12 @@ def validate_dataframe(
                 )
 
 
-def build_metadata(dataframe: pd.DataFrame, *, preview_rows: int = DEFAULT_PREVIEW_ROWS) -> dict:
+def build_metadata(
+    dataframe: pd.DataFrame,
+    *,
+    preview_rows: int = DEFAULT_PREVIEW_ROWS,
+    task: str = "classification",
+) -> dict:
     columns = []
     for column in dataframe.columns:
         series = dataframe[column]
@@ -102,15 +107,22 @@ def build_metadata(dataframe: pd.DataFrame, *, preview_rows: int = DEFAULT_PREVI
         {str(key): _json_value(value) for key, value in row.items()}
         for row in dataframe.head(preview_rows).to_dict(orient="records")
     ]
-    target_candidates = [
-        column["name"]
-        for column in columns
-        if MIN_CLASS_COUNT
-        <= column["unique_count"]
-        <= MAX_CLASSIFICATION_CLASSES
-        and column["minimum_frequency"] >= MIN_CLASS_COUNT
-        and column["missing_count"] == 0
-    ]
+    if task == "regression":
+        target_candidates = [
+            column["name"]
+            for column in columns
+            if column["missing_count"] == 0
+            and pd.api.types.is_numeric_dtype(dataframe[column["name"]])
+            and not pd.api.types.is_bool_dtype(dataframe[column["name"]])
+        ]
+    else:
+        target_candidates = [
+            column["name"]
+            for column in columns
+            if MIN_CLASS_COUNT <= column["unique_count"] <= MAX_CLASSIFICATION_CLASSES
+            and column["minimum_frequency"] >= MIN_CLASS_COUNT
+            and column["missing_count"] == 0
+        ]
     return {
         "columns": columns,
         "preview": preview,
@@ -162,3 +174,27 @@ def validate_target_column(
                 raise DatasetValidationError(
                     f"Feature '{column}' has too many categories (maximum {MAX_CATEGORICAL_CARDINALITY}). Encode or aggregate it before training."
                 )
+
+
+def validate_regression_target(dataframe: pd.DataFrame, target_column: str, *, test_size: float = DEFAULT_TEST_SIZE) -> None:
+    validate_dataframe(dataframe, min_rows=MIN_TRAINING_ROWS)
+    if target_column not in dataframe.columns:
+        raise DatasetValidationError("The selected target column does not exist.")
+    target = dataframe[target_column]
+    if target.isna().any() or not _is_numeric(target):
+        raise DatasetValidationError("Regression targets must be numeric and cannot contain missing values.")
+    test_rows = max(1, int(len(dataframe) * test_size))
+    if test_rows < 1 or len(dataframe) - test_rows < 1:
+        raise DatasetValidationError("The dataset is too small for training and evaluation.")
+    if len(dataframe.columns) < 2:
+        raise DatasetValidationError("At least one feature column is required for training.")
+    for column in dataframe.columns:
+        if column == target_column:
+            continue
+        series = dataframe[column]
+        if series.isna().all():
+            raise DatasetValidationError(f"Feature '{column}' contains no usable values.")
+        if not _is_numeric(series) and series.nunique(dropna=True) > MAX_CATEGORICAL_CARDINALITY:
+            raise DatasetValidationError(
+                f"Feature '{column}' has too many categories (maximum {MAX_CATEGORICAL_CARDINALITY})."
+            )

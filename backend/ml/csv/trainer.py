@@ -1,4 +1,4 @@
-"""Random Forest training for CSV classification."""
+"""Training helpers for CSV classification and regression models."""
 
 from __future__ import annotations
 
@@ -6,13 +6,15 @@ from dataclasses import dataclass
 from typing import Any
 
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-from .evaluator import evaluate_classifier
+from .evaluator import evaluate_classifier, evaluate_regressor
 from .preprocessing import build_feature_schema, build_preprocessor, identify_feature_types
-from .validation import DatasetValidationError, validate_dataframe, validate_target_column
+from .validation import DatasetValidationError, validate_dataframe, validate_regression_target, validate_target_column
 
 
 @dataclass(frozen=True)
@@ -94,7 +96,7 @@ def train_random_forest(
     metrics = evaluate_classifier(y_test, predictions, class_labels)
     numeric_columns, categorical_columns = identify_feature_types(x_train, target_column)
     metadata = {
-        "algorithm": "RANDOM_FOREST",
+        "algorithm": "RANDOM_FOREST_CLASSIFIER",
         "target_column": target_column,
         "features": build_feature_schema(x_train, target_column),
         "feature_types": {
@@ -120,3 +122,65 @@ def train_random_forest(
         metadata=metadata,
         stratified=can_stratify,
     )
+
+
+def train(dataframe: pd.DataFrame, target_column: str, *, algorithm: str = "RANDOM_FOREST_CLASSIFIER", test_size: float = 0.2, random_state: int = 42) -> TrainingResult:
+    if algorithm == "RANDOM_FOREST_CLASSIFIER":
+        return train_random_forest(
+            dataframe,
+            target_column,
+            test_size=test_size,
+            random_state=random_state,
+        )
+    classifiers = {
+        "RANDOM_FOREST_CLASSIFIER": RandomForestClassifier(n_estimators=100, random_state=random_state),
+        "DECISION_TREE_CLASSIFIER": DecisionTreeClassifier(random_state=random_state),
+        "LOGISTIC_REGRESSION": LogisticRegression(max_iter=1000, random_state=random_state),
+    }
+    regressors = {
+        "RANDOM_FOREST_REGRESSOR": RandomForestRegressor(n_estimators=100, random_state=random_state),
+        "LINEAR_REGRESSION": LinearRegression(),
+    }
+    if algorithm in classifiers:
+        validate_target_column(dataframe, target_column, test_size=test_size)
+        target = dataframe[target_column]
+        features = dataframe.drop(columns=[target_column])
+        x_train, x_test, y_train, y_test = train_test_split(
+            features, target, test_size=test_size, random_state=random_state, stratify=target
+        )
+        preprocessor = build_preprocessor(x_train, target_column)
+        pipeline = Pipeline([("preprocessor", preprocessor), ("classifier", classifiers[algorithm])])
+        pipeline.fit(x_train, y_train)
+        labels = pipeline.named_steps["classifier"].classes_
+        metrics = evaluate_classifier(y_test, pipeline.predict(x_test), labels)
+        stratified = True
+        target_type = "classification"
+    elif algorithm in regressors:
+        validate_regression_target(dataframe, target_column, test_size=test_size)
+        features = dataframe.drop(columns=[target_column])
+        target = dataframe[target_column]
+        x_train, x_test, y_train, y_test = train_test_split(features, target, test_size=test_size, random_state=random_state)
+        preprocessor = build_preprocessor(x_train, target_column)
+        pipeline = Pipeline([("preprocessor", preprocessor), ("regressor", regressors[algorithm])])
+        pipeline.fit(x_train, y_train)
+        metrics = evaluate_regressor(y_test, pipeline.predict(x_test))
+        labels = []
+        stratified = False
+        target_type = "regression"
+    else:
+        raise DatasetValidationError("Unsupported training algorithm.")
+    numeric_columns, categorical_columns = identify_feature_types(x_train, target_column)
+    metadata = {
+        "algorithm": algorithm,
+        "target_column": target_column,
+        "task": target_type,
+        "features": build_feature_schema(x_train, target_column),
+        "feature_types": {"numerical": numeric_columns, "categorical": categorical_columns},
+        "class_labels": [_json_value(label) for label in labels],
+        "test_size": test_size,
+        "random_state": random_state,
+        "stratified": stratified,
+        "train_rows": len(x_train),
+        "test_rows": len(x_test),
+    }
+    return TrainingResult(pipeline=pipeline, metrics=metrics, metadata=metadata, stratified=stratified)

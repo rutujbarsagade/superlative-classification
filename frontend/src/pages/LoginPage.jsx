@@ -36,7 +36,7 @@ export function LoginPage() {
   return (
     <section className="mx-auto max-w-md">
       <div className="mb-8">
-        <p className="text-sm font-medium text-cyan-300">Developer access</p>
+        <p className="text-sm font-medium text-cyan-300">Platform access</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Sign in</h1>
         <p className="mt-3 text-sm leading-6 text-slate-400">
           Use your approved account to access the classification workspace.
@@ -90,4 +90,3 @@ export function LoginPage() {
     </section>
   );
 }
-
